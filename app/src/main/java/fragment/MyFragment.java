@@ -9,10 +9,15 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.squareup.otto.Subscribe;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import model.ProcessUpdate;
+import myBusStaction.MyBusStation;
 import saidul.com.androidexampletoexecutethreadswithexecutorservice.R;
+import service.CountThread;
 
 /**
  * Created by Prime Tech on 7/26/2016.
@@ -52,16 +57,34 @@ public class MyFragment extends android.support.v4.app.Fragment implements View.
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        MyBusStation.getBus().register(this);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        MyBusStation.getBus().unregister(this);
+    }
+
+    @Subscribe
+    public void processUpdate(ProcessUpdate processUpdate){
+        progressBar1.setProgress(processUpdate.getProcess());
+
+    }
+
+    @Override
     public void onClick(View view) {
         switch (view.getId()){
 
             case R.id.start:
 
-                countThread1 = new CountThread(progressBar1);
-                countThread2 = new CountThread(progressBar1);
-                countThread3 = new CountThread(progressBar1);
-                countThread4 = new CountThread(progressBar1);
-                countThread5 = new CountThread(progressBar1);
+                countThread1 = new CountThread();
+                countThread2 = new CountThread();
+                countThread3 = new CountThread();
+                countThread4 = new CountThread();
+                countThread5 = new CountThread();
 
 
                 executorService = Executors.newFixedThreadPool(1);
@@ -75,38 +98,5 @@ public class MyFragment extends android.support.v4.app.Fragment implements View.
         }
     }
 
-    public class CountThread extends Thread{
-        ProgressBar progressBar;
-        final  int MAX_PROGRESS =10;
-        int progress;
-        long currentThread;
 
-        public CountThread(ProgressBar progressBar){
-            this.progressBar = progressBar;
-            this.progress = MAX_PROGRESS;
-        }
-
-        @Override
-        public void run() {
-            super.run();
-            for (int i=0;i<MAX_PROGRESS;i++){
-                progress--;
-
-
-                getActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        progressBar.setProgress(progress);
-                    }
-                });
-
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-
-            }
-        }
-    }
 }
